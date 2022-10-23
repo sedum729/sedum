@@ -19,14 +19,13 @@ export function genIframe(options) {
     appRoutePath,
   } = options;
 
-  console.log('options>>', options);
 
   const iframe = window.document.createElement("iframe");
   const url = mainHostPath + appRoutePath;
 
   const iframeAtts = {
     src: mainHostPath,
-    // style: 'display: none',
+    style: 'display: none',
     name: sandbox.id,
   };
 
@@ -41,7 +40,6 @@ export function genIframe(options) {
 
   iframeWindow[win_sandbox_name] = sandbox;
 
-  console.log('iframeWindow>>', iframeWindow.location.href)
 
   // 给iframeWindow增加了些参数 暂时不知道作用
   // patchIframeVariable
@@ -68,9 +66,12 @@ export function genIframe(options) {
  export function initBase(iframeWindow, url) {
   const iframeDocument = iframeWindow.document;
   const baseElement = iframeDocument.createElement("base");
+
   const iframeUrlElement = genAnchorElement(iframeWindow.location.href);
   const appUrlElement = genAnchorElement(url);
+
   baseElement.setAttribute("href", appUrlElement.protocol + "//" + appUrlElement.host + iframeUrlElement.pathname);
+
   iframeDocument.head.appendChild(baseElement);
 }
 
@@ -106,6 +107,8 @@ function stopIframeLoading(iframeWindow, url) {
           iframeWindow.stop();
 
           initIframeDom(iframeWindow);
+
+          resolve();
         }
       });
     };

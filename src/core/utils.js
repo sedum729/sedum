@@ -7,7 +7,6 @@ export function appRouteParse(url) {
   const appHostPath = urlElement.protocol + "//" + urlElement.host;
   const appRoutePath = urlElement.pathname + urlElement.search + urlElement.hash;
 
-
   return {
     urlElement,
     appHostPath,
@@ -55,4 +54,77 @@ export function getAbsolutePath(url, base, hash) {
   } catch {
     return url;
   }
+}
+
+export function getContainer(container) {
+  return typeof container === "string" ? document.querySelector(container) : container;
+}
+
+const naughtySafari = typeof document.all === "function" && typeof document.all === "undefined";
+const callableFnCacheMap = new WeakMap();
+export const isCallable = (fn) => {
+  if (callableFnCacheMap.has(fn)) {
+    return true;
+  }
+
+  const callable = naughtySafari ? typeof fn === "function" && typeof fn !== "undefined" : typeof fn === "function";
+  if (callable) {
+    callableFnCacheMap.set(fn, callable);
+  }
+  return callable;
+};
+
+const boundedMap = new WeakMap();
+export function isBoundedFunction(fn) {
+  if (boundedMap.has(fn)) {
+    return boundedMap.get(fn);
+  }
+  const bounded = fn.name.indexOf("bound ") === 0 && !fn.hasOwnProperty("prototype");
+  boundedMap.set(fn, bounded);
+  return bounded;
+}
+
+const fnRegexCheckCacheMap = new WeakMap();
+export function isConstructable(fn) {
+  const hasPrototypeMethods =
+    fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1;
+
+  if (hasPrototypeMethods) return true;
+
+  if (fnRegexCheckCacheMap.has(fn)) {
+    return fnRegexCheckCacheMap.get(fn);
+  }
+
+  let constructable = hasPrototypeMethods;
+  if (!constructable) {
+    const fnString = fn.toString();
+    const constructableFunctionRegex = /^function\b\s[A-Z].*/;
+    const classRegex = /^class\b/;
+    constructable = constructableFunctionRegex.test(fnString) || classRegex.test(fnString);
+  }
+
+  fnRegexCheckCacheMap.set(fn, constructable);
+  return constructable;
+}
+
+const setFnCacheMap = new WeakMap();
+export function getTargetValue(target, keyName) {
+  const value = target[keyName];
+
+  if (isCallable(value) && !isBoundedFunction(value) && !isConstructable(value)) {
+    const boundValue = Function.prototype.bind.call(value, target);
+    setFnCacheMap.set(value, boundValue);
+
+    for (const key in value) {
+      boundValue[key] = value[key];
+    }
+
+    if (value.hasOwnProperty("prototype") && !boundValue.hasOwnProperty("prototype")) {
+      Object.defineProperty(boundValue, "prototype", { value: value.prototype, enumerable: false, writable: true });
+    }
+
+    return boundValue;
+  }
+
+  return value;
 }

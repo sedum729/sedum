@@ -1,4 +1,4 @@
-import { getContainer, rawElementAppendChild, relativeElementTagAttrMap } from './common';
+import { rawElementAppendChild, relativeElementTagAttrMap, rawElementRemoveChild } from './common';
 
 import { attr_data_id, win_sandbox_name, style_shade } from './constant';
 
@@ -6,7 +6,7 @@ import { getSandboxById } from './store';
 
 import { patchElementEffect } from './iframe';
 
-import { getAbsolutePath } from './utils';
+import { getAbsolutePath, getContainer } from './utils';
 
 import { patchRenderEffect } from './effect';
 
@@ -63,7 +63,7 @@ export function renderElementToContainer(content, container) {
 
   if (realContainer && !realContainer.contains(content)) {
     if (content) {
-      rawElementAppendChild.call(container, content);
+      rawElementAppendChild.call(realContainer, content);
     }
   }
 

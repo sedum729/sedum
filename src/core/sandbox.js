@@ -4,9 +4,9 @@ import { genIframe } from './iframe';
 
 import { rawDocumentQuerySelector } from './common';
 
-import {
-  win_child_runtime
-} from './constant';
+import { win_child_runtime } from './constant';
+
+import { proxyGenerator } from './proxy';
 
 import {
   creatZhiYuanComponent,
@@ -23,7 +23,7 @@ import {
 */
 export default class Z {
   constructor(options) {
-    const { url, name } = options;
+    const { url, name, el } = options;
 
     /**
      * 当前实例的唯一标识符
@@ -34,6 +34,11 @@ export default class Z {
      * 实例需要处理的路由地址
     */
     this.url = url;
+
+    /**
+     * 挂载节点
+    */
+    this.el = el;
 
     const mainHostPath = window.location.protocol + "//" + window.location.host;
 
@@ -49,6 +54,17 @@ export default class Z {
       appRoutePath,
     });
     this.iframe = iframe;
+
+    const { proxyWindow, proxyDocument, proxyLocation } = proxyGenerator(
+      iframe,
+      urlElement,
+      mainHostPath,
+      appHostPath
+    );
+    this.proxyWindow = proxyWindow;
+    this.proxyDocument = proxyDocument;
+    this.proxyLocation = proxyLocation;
+
 
     addSandbox(name, this);
   }
@@ -73,16 +89,15 @@ export default class Z {
 
     // 处理子应用路由同步
 
-    console.log('get shadowRoot>>', this.shadowRoot);
 
     // 准备shadow
     if (this.shadowRoot) {
-      console.log('get shadowRoot>>', this.shadowRoot);
     } else {
       const iframeBody = rawDocumentQuerySelector.call(iframeWindow.document, 'body');
 
-      this.el = renderElementToContainer(creatZhiYuanComponent(this.id), iframeBody);
+      this.el = renderElementToContainer(creatZhiYuanComponent(this.id), this.el || iframeBody);
     }
+
 
     // 将内容插入到shadowRoot中
     await renderTemplateToShadowRoot(this.shadowRoot, iframeWindow, this.template);

@@ -1,0 +1,1 @@
+export * as ZhiYuan from './core/index';

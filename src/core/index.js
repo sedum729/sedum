@@ -24,15 +24,13 @@ export async function start(options) {
 
   const sandbox = new ZhiYuan(options);
 
-  const { template } = await importHTML(url);
+  const { template, getExternalScripts } = await importHTML(url);
 
   await sandbox.active({
     template
   });
 
-  await sandbox.start({
-
-  });
+  await sandbox.start(getExternalScripts);
 
   return sandbox.destroy;
 }

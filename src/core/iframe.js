@@ -1,6 +1,6 @@
 import { win_sandbox_name } from './constant';
 
-import { rawElementRemoveChild } from './common';
+import { rawElementRemoveChild, rawDocumentQuerySelector } from './common';
 
 import { clearChild } from './shadow';
 
@@ -136,4 +136,54 @@ export function patchElementEffect(eleNode, iframeWindow) {
       get: () => true
     }
   });
+}
+
+/**
+ * iframe插入脚本
+ * @param scriptResult script请求结果
+ * @param iframeWindow
+ */
+export function insertScriptToIframe(scriptResult, iframeWindow) {
+  const { src, module, content, crossorigin, crossoriginType, async, callback } = scriptResult;
+  const scriptElement = iframeWindow.document.createElement("script");
+  const nextScriptElement = iframeWindow.document.createElement("script");
+  const { replace, plugins, proxyLocation } = iframeWindow[win_sandbox_name];
+  let code = '';
+
+  // 内联脚本
+  if (content) {
+    // patch location
+    if (!module) {
+      code = `(function(window, self, global, location) {
+                ${content}
+              }).bind(window.${win_sandbox_name}.proxyWindow)(
+                window.${win_sandbox_name}.proxyWindow,
+                window.${win_sandbox_name}.proxyWindow,
+                window.${win_sandbox_name}.proxyWindow,
+                window.${win_sandbox_name}.proxyLocation,
+              );`;
+    }
+    // 解决 webpack publicPath 为 auto 无法加载资源的问题
+    Object.defineProperty(scriptElement, "src", { get: () => src || "" });
+    // 非内联脚本
+  } else {
+    src && scriptElement.setAttribute("src", src);
+    crossorigin && scriptElement.setAttribute("crossorigin", crossoriginType);
+  }
+  module && scriptElement.setAttribute("type", "module");
+  scriptElement.textContent = code || "";
+  nextScriptElement.textContent = `if(window.${win_sandbox_name}.execQueue && window.${win_sandbox_name}.execQueue.length){ window.${win_sandbox_name}.execQueue.shift()()}`;
+
+  const container = rawDocumentQuerySelector.call(iframeWindow.document, "head");
+
+  if (/^<!DOCTYPE html/i.test(code)) {
+    return !async && container.appendChild(nextScriptElement);
+  }
+  container.appendChild(scriptElement);
+
+  // 调用回调
+  callback?.(iframeWindow);
+
+  // async脚本不在执行队列，无需next操作
+  !async && container.appendChild(nextScriptElement);
 }

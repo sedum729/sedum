@@ -1,36 +1,52 @@
-import { defaultWebComponent } from './shadow';
+import { getRootNode } from './utils';
 
-import ZhiYuan from './sandbox';
+class ZhiYuan {
+  constructor(options) {
+    const { root, routeMode } = options;
 
-import { importHTML } from './entry';
+    if (!root) {
+      throw new Error('请传入挂载节点');
+    }
 
-import { win_sandbox_name, win_child_runtime } from './constant';
+    /**
+     * 存放当前路由
+    */
+    this.routes = [];
 
-if (window[win_sandbox_name] && !window[win_child_runtime]) {
-  throw 'break';
-}
+    /**
+     * 应用挂载节点
+     * 支持传入 string ｜ dom节点
+    */
+    this.root = root;
 
-// 定义自定义组件
-defaultWebComponent();
+    /**
+     * 路由模式
+     * brower | hash
+    */
+    this.routeMode = routeMode;
+  }
 
-/**
- * 运行纸鸢app
- * @date 2022-10-23
- * @param {any} options
- * @returns {any}
- */
-export async function start(options) {
-  const { url, name, el } = options;
 
-  const sandbox = new ZhiYuan(options);
+  /**
+   * 注册路由
+   * @date 2022-10-26
+   * @returns {any}
+   */
+  registerRoute(routes) {
+    this.routes = routes;
+  }
 
-  const { template, getExternalScripts } = await importHTML(url);
+  /**
+   * 开始运行
+   * @date 2022-10-26
+   * @returns {any}
+   */
+  start() {
+    
+    this.root = getRootNode(this.root);
 
-  await sandbox.active({
-    template
-  });
+    console.log('>>>', this.routes, this.root);
+  }
+};
 
-  await sandbox.start(getExternalScripts);
-
-  return sandbox.destroy;
-}
+export default ZhiYuan;

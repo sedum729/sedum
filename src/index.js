@@ -1,1 +1,3 @@
-export * as ZhiYuan from './core/index';
+import ZhiYuan from './core/index';
+
+export default ZhiYuan;

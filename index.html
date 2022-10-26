@@ -10,13 +10,34 @@
   <div id="app"></div>
   <script src="./dist/index.js"></script>
   <script>
-    const ZhiYuan = boundle.ZhiYuan;
+    // const ZhiYuan = boundle.ZhiYuan;
 
-    ZhiYuan.start({
-      url: 'http://localhost:8080/index2.html?xxx=1',
-      name: '百度',
-      el: '#app',
+    // ZhiYuan.start({
+    //   url: 'http://localhost:8081/index2.html?xxx=1',
+    //   name: '百度',
+    //   el: '#app',
+    // });
+    const ZhiYuan = boundle;
+
+    const app = new ZhiYuan({
+      root: '#app',
+      routeMode: 'brower',
     });
+
+    const routes = [
+      {
+        path: '/',
+        url: 'https://www.baidu.com',
+        exact: true, // 精确匹配
+      }
+    ];
+
+    app.registerRoute(routes);
+
+    // app.use();
+
+    app.start();
+
   </script>
 </body>
 </html>

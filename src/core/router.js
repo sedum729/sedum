@@ -1,5 +1,9 @@
 import { createBrowserHistory, createHashHistory, createMemoryHistory, Action, createPath, parsePath } from 'history';
 
+import { pathToRegexp } from 'path-to-regexp';
+
+console.log('pathToRegexp>>', pathToRegexp);
+
 // Create your own history instance.
 // import { createBrowserHistory } from "history";
 // let history = createBrowserHistory();
@@ -41,7 +45,7 @@ export function genRouter(routeMode) {
 }
 
 /**
- * 描述
+ * 解释路由
  * @date 2022-10-27
  * @returns {any}
  */
@@ -51,6 +55,13 @@ export function parseRoute(routes, routeMap = new Map()) {
       const pathName = item?.path;
 
       if (!routeMap.has(pathName)) {
+        console.log('item>>', item);
+        const path = item?.path || '/';
+
+        item.matchRule = pathToRegexp(path, [], {
+          strict: true,
+        });
+
         routeMap.set(pathName, item);
       } else {
         throw new Error('重复路由注册');
@@ -60,3 +71,29 @@ export function parseRoute(routes, routeMap = new Map()) {
 
   return routeMap;
 }
+
+export function matchRoute(pathName, routerMap) {
+  
+  const mapKeys = Array.from(routerMap.keys());
+
+  let matchRouter = null;
+
+  mapKeys.every(keyName => {
+    if (keyName) {
+      const routerVo = routerMap.get(keyName);
+      const matchRule = routerVo?.matchRule;
+      console.log('keyName>>', keyName, matchRule.exec(keyName));
+      const matchResult = matchRule.exec(keyName);
+
+      if (matchResult) {
+        matchRouter = routerVo;
+
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  return matchRouter;
+};

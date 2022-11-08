@@ -1,3 +1,3 @@
-import ZhiYuan from './core/index';
+import Sedum from './core/index';
 
-export default ZhiYuan;
+export default Sedum;

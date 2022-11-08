@@ -1,8 +1,10 @@
 import { getRootNode } from './utils';
 
-import { genRouter, parseRoute } from './router';
+import { genRouter, parseRoute, matchRoute } from './router';
 
-class ZhiYuan {
+import { startApp as microAppStart, destroyApp as microAppDestroy } from '../micro-app';
+
+class Sedum {
   constructor(options) {
     const { root, routeMode = 'brower' } = options;
 
@@ -41,6 +43,21 @@ class ZhiYuan {
     */
     this.hasHistoryLiestener = false;
 
+    /**
+     * 当前激活的路由
+    */
+    this.activeRoute = null;
+
+    /**
+     * 记录路由地址
+    */
+    this.pathname = '';
+
+    /**
+     * 记录微应用
+    */
+    this.prevMicroApp = null;
+
     this.init();
   }
 
@@ -52,9 +69,7 @@ class ZhiYuan {
   init() {
     this.history = genRouter(this.routeMode);
 
-    console.log('>>>', this.history.location);
-
-    if (!this.hasHistoryLiestener) {
+    if (!this.unListenHistory) {
       this.unListenHistory = this.listenHistory();
     }
   }
@@ -63,12 +78,8 @@ class ZhiYuan {
     this.hasHistoryLiestener = true;
 
     return this.history.listen(({ location, action }) => {
-      this.findActiveRoute(location, action);
+      this.transitionView();
     });
-  }
-
-  unListenHistory() {
-
   }
 
   /**
@@ -76,8 +87,29 @@ class ZhiYuan {
    * @date 2022-10-27
    * @returns {any}
    */
-  findActiveRoute(location, action) {
+  findActiveRoute() {
+    const { pathname } = this.history.location;
 
+    const activeRoute = matchRoute(pathname, this.routeMap);
+
+    this.activeRoute = activeRoute;
+  }
+
+  async transitionView() {
+    if (this.prevMicroAppInfo) {
+      // console.log('this.prevMicroApp>>', this.prevMicroAppInfo);
+      // alert(1);
+      microAppDestroy(this.prevMicroAppInfo.name);
+    }
+
+    this.findActiveRoute();
+
+    this.prevMicroAppInfo = {
+      ...this.activeRoute,
+      el: this.root
+    };
+
+    microAppStart(this.prevMicroAppInfo);
   }
 
   /**
@@ -100,8 +132,9 @@ class ZhiYuan {
 
     this.routeMap = parseRoute(this.routes);
 
-    console.log('>>>', this.routeMap, this.root);
+    this.transitionView();
   }
+
 };
 
-export default ZhiYuan;
+export default Sedum;

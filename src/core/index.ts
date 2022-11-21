@@ -1,14 +1,8 @@
 import { getRootContainer } from './utils';
 
-import { genRouter } from './router';
+import { genRouter, IRouteItem, deepMatchRoute } from './router';
 
 // import { startApp } from '../micro-app';
-
-interface IRouteItem {
-  name: string;
-  entry: string;
-  activeRule: string;
-};
 
 type TRouteMode = 'hash' | 'history';
 
@@ -50,7 +44,9 @@ class Sedum implements TSedum {
   }
 
   start() {
-    console.log('this.rootContainerElement>>>', this.router.location);
+    const curPathName = this.router?.location?.pathname;
+    console.log('curPath>>>', curPathName);
+    deepMatchRoute(this.routes, curPathName);
     // startApp({
 
     // });

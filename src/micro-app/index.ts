@@ -290,7 +290,6 @@ export function preloadApp(preOptions: preOptions): void {
  * 销毁无界APP
  */
 export function destroyApp(id: string): void {
-  console.log('卸载>>', id);
   const sandbox = getWujieById(id);
   if (sandbox) {
     sandbox.destroy();

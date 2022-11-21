@@ -9,10 +9,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean:dist": "rm -rf dist",
-    "build:types": "npm run clean:dist && tsc -b ./tsconfig.types.json",
-    "build": "npm run build:types && rollup -c",
+    "build:types": "npm run clean:dist && tsc -b ./tsconfig.types.json // npm run build:types && ",
+    "build": "rollup -c",
     "start": "npm run clean:dist && rollup --config",
-    "dev": "http-server",
+    "dev": "rollup -c -w",
     "genlog": "npm run genlog"
   },
   "keywords": [],

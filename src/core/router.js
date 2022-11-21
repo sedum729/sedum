@@ -44,34 +44,6 @@ export function genRouter(routeMode) {
   }
 }
 
-/**
- * 解释路由
- * @date 2022-10-27
- * @returns {any}
- */
-export function parseRoute(routes, routeMap = new Map()) {
-  if (routes && Array.isArray(routes)) {
-    routes.forEach(item => {
-      const pathName = item?.path;
-
-      if (!routeMap.has(pathName)) {
-        console.log('item>>', item);
-        const path = item?.path || '/';
-
-        item.matchRule = pathToRegexp(path, [], {
-          strict: true,
-        });
-
-        routeMap.set(pathName, item);
-      } else {
-        throw new Error('重复路由注册');
-      }
-    });
-  }
-
-  return routeMap;
-}
-
 export function matchRoute(pathName, routerMap) {
   
   const mapKeys = Array.from(routerMap.keys());
